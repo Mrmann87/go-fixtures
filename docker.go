@@ -136,7 +136,13 @@ func GetContainerAddress(resource *dockertest.Resource, network *dockertest.Netw
 	}
 	if RunningInsideContainer {
 		fmt.Println(resource.Container.NetworkSettings)
-		return resource.Container.NetworkSettings.Gateway
+		gw := resource.Container.NetworkSettings.Gateway
+		if gw != "" {
+			return gw
+		}
+		if nw, ok := resource.Container.NetworkSettings.Networks[network.Network.Name]; ok {
+			return nw.Gateway
+		}
 	}
 	return "localhost"
 }
