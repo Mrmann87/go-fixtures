@@ -91,7 +91,6 @@ func (f *Docker) getOrCreateNetwork() (*dockertest.Network, error) {
 	if len(ns) != 1 {
 		return nil, fmt.Errorf("list networks returned %d results, expected only 1", len(ns))
 	}
-	fmt.Printf("Networks: %v\n", ns)
 	// This struct also contains an unexported reference to pool.
 	// Unfortunately, the framework doesn't give us a way to construct a Network struct in any way
 	// other than calling the CreateNetwork function, so we just have to leave the pool unset.
@@ -111,8 +110,6 @@ func WaitForContainer(pool *dockertest.Pool, resource *dockertest.Resource) (int
 }
 
 func GetHostIP(resource *dockertest.Resource, network *dockertest.Network) string {
-	fmt.Println(network.Network.Name)
-	fmt.Println(resource.Container.NetworkSettings)
 	if n, ok := resource.Container.NetworkSettings.Networks[network.Network.Name]; ok {
 		return n.IPAddress
 	}
@@ -135,7 +132,6 @@ func GetContainerAddress(resource *dockertest.Resource, network *dockertest.Netw
 		return GetHostIP(resource, network)
 	}
 	if RunningInsideContainer {
-		fmt.Println(resource.Container.NetworkSettings)
 		gw := resource.Container.NetworkSettings.Gateway
 		if gw != "" {
 			return gw
