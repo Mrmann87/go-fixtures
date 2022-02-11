@@ -20,8 +20,8 @@ test-docker:
 	set -o pipefail; \
 		docker run --rm \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v $$PWD:/src \
-		--workdir /src \
+		-v $$PWD:$$PWD \
+		--workdir $$PWD \
 		-e DEBUG=true \
 		golang:1.17 \
 		go test ./... -v || ( \
@@ -39,8 +39,8 @@ test-docker-network:
 		docker run --rm \
 		--network=bridge-fixtures \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v $$PWD:/src \
-		--workdir /src \
+		-v $$PWD:$$PWD \
+		--workdir $$PWD \
 		-e DEBUG=true \
 		-e HOST_NETWORK_NAME=bridge-fixtures \
 		golang:1.17 \

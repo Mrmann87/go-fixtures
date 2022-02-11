@@ -17,10 +17,10 @@ var RunningInsideContainer = isRunningInContainer()
 
 type Docker struct {
 	BaseFixture
-	Name          string
-	NamePrefix    string
-	Pool          *dockertest.Pool
-	Network            *dockertest.Network
+	Name       string
+	NamePrefix string
+	Pool       *dockertest.Pool
+	Network    *dockertest.Network
 }
 
 func (f *Docker) SetUp(ctx context.Context) error {
