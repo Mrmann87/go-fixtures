@@ -42,7 +42,7 @@ test-docker-network:
 		-v $$PWD:/src \
 		--workdir /src \
 		-e DEBUG=true \
-		-e HOST_NETWORK_NAME=brdige-fixtures \
+		-e HOST_NETWORK_NAME=bridge-fixtures \
 		golang:1.17 \
 		go test ./... -v || ( \
 		([ ! -z "$$(docker container ls -aq)" ] && docker container stop $$(docker container ls -aq)) && \
