@@ -111,6 +111,8 @@ func WaitForContainer(pool *dockertest.Pool, resource *dockertest.Resource) (int
 }
 
 func GetHostIP(resource *dockertest.Resource, network *dockertest.Network) string {
+	fmt.Println(network.Network.Name)
+	fmt.Println(resource.Container.NetworkSettings)
 	if n, ok := resource.Container.NetworkSettings.Networks[network.Network.Name]; ok {
 		return n.IPAddress
 	}
