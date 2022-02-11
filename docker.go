@@ -75,7 +75,11 @@ func (f *Docker) getOrCreateNetwork() (*dockertest.Network, error) {
 
 	hostNetworkName := os.Getenv("HOST_NETWORK_NAME")
 	if hostNetworkName == "" {
-		return nil, nil
+		nw, err := f.Pool.CreateNetwork(f.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create docker network: %w", err)
+		}
+		return nw, nil
 	}
 
 	ns, err := f.Pool.Client.FilteredListNetworks(map[string]map[string]bool{
