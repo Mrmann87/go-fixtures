@@ -36,3 +36,5 @@ jobs:
       run: make test
     - name: Test (Under Docker)
       run: make test-docker
+    - name: Test (Under Docker w/ host network)
+      run: make test-docker-network
