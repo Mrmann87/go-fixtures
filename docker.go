@@ -17,10 +17,11 @@ var RunningInsideContainer = isRunningInContainer()
 
 type Docker struct {
 	BaseFixture
-	Name       string
-	NamePrefix string
-	Pool       *dockertest.Pool
-	Network    *dockertest.Network
+	Name          string
+	NamePrefix    string
+	Pool          *dockertest.Pool
+	Network            *dockertest.Network
+	HostManagedNetwork bool
 }
 
 func (f *Docker) SetUp(ctx context.Context) error {
@@ -45,7 +46,7 @@ func (f *Docker) SetUp(ctx context.Context) error {
 		return err
 	}
 
-	if f.Network, err = f.getOrCreateNetwork(); err != nil {
+	if f.Network, f.HostManagedNetwork, err = f.getOrCreateNetwork(); err != nil {
 		return err
 	}
 
@@ -64,32 +65,32 @@ func (f *Docker) TearDown(context.Context) error {
 	return nil
 }
 
-func (f *Docker) getOrCreateNetwork() (*dockertest.Network, error) {
+func (f *Docker) getOrCreateNetwork() (*dockertest.Network, bool, error) {
 	if !RunningInsideContainer {
 		nw, err := f.Pool.CreateNetwork(f.Name)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create docker network: %w", err)
+			return nil, false, fmt.Errorf("failed to create docker network: %w", err)
 		}
-		return nw, nil
+		return nw, false, nil
 	}
 
 	hostNetworkName := os.Getenv("HOST_NETWORK_NAME")
 	if hostNetworkName == "" {
 		nw, err := f.Pool.CreateNetwork(f.Name)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create docker network: %w", err)
+			return nil, false, fmt.Errorf("failed to create docker network: %w", err)
 		}
-		return nw, nil
+		return nw, false, nil
 	}
 
 	ns, err := f.Pool.Client.FilteredListNetworks(map[string]map[string]bool{
 		"name": {hostNetworkName: true},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error listing docker networks: %w", err)
+		return nil, false, fmt.Errorf("error listing docker networks: %w", err)
 	}
 	if len(ns) != 1 {
-		return nil, fmt.Errorf("list networks returned %d results, expected only 1", len(ns))
+		return nil, false, fmt.Errorf("list networks returned %d results, expected only 1", len(ns))
 	}
 	// This struct also contains an unexported reference to pool.
 	// Unfortunately, the framework doesn't give us a way to construct a Network struct in any way
@@ -98,7 +99,7 @@ func (f *Docker) getOrCreateNetwork() (*dockertest.Network, error) {
 	// calling Close() also disconnects ALL the containers from the network, which isn't desirable
 	// when running inside of a host container, because we don't actually want to disconncet the host
 	// from the network.
-	return &dockertest.Network{Network: &ns[0]}, nil
+	return &dockertest.Network{Network: &ns[0]}, true, nil
 }
 
 func WaitForContainer(pool *dockertest.Pool, resource *dockertest.Resource) (int, error) {
@@ -148,6 +149,7 @@ func GetContainerTcpPort(resource *dockertest.Resource, network *dockertest.Netw
 }
 
 func UseBridgeNetwork(network *dockertest.Network) bool {
+	fmt.Println(network.Network.Containers)
 	if RunningInsideContainer && network != nil {
 		return true
 	}
